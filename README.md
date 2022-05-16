@@ -5,13 +5,13 @@
 Представляет собой интерфейс для создания заявок системноуму администратору.
 
 Пример использования:
-![image](https://github.com/ctg135/bot-helper-Control-IT/master/images/usage.gif)
+![image](https://github.com/ctg135/bot-helper-Control-IT/blob/master/images/usage.gif)
 
 Также системный администратор может открыть чат с пользователем
-![image](https://github.com/ctg135/bot-helper-Control-IT/master/images/question.jpg)
+![image](https://github.com/ctg135/bot-helper-Control-IT/blob/master/images/question.jpg)
 
 После выполнения заявки пользователю предоставляется возможность оставить отзыв
-![image](https://github.com/ctg135/bot-helper-Control-IT/master/images/feedback.jpg)
+![image](https://github.com/ctg135/bot-helper-Control-IT/blob/master/images/feedback.jpg)
 
 ##Панель управления администратора
 
@@ -30,7 +30,7 @@
 \/import	Загрузка файла базы данных
 
 Принятие входящих заявок и набор имеющихся команд
-![image](https://github.com/ctg135/bot-helper-Control-IT/master/images/admin1.png)
+![image](https://github.com/ctg135/bot-helper-Control-IT/blob/master/images/admin1.png)
 
 
 
