@@ -233,12 +233,14 @@ def get_description(message):
 
 # Создание заявки в БД
 def create_request(message):
-    # Создание заявки в бд   reply_markup=types.ReplyKeyboardRemove(),
+    # Создание заявки в бд   
+    # reply_markup=types.ReplyKeyboardRemove(),
     new_request = db.new_request(description=description,
                                 location=location,
                                 sender=name,
                                 date_start=message.date,
                                 sender_id=message.from_user.id)
+    bot.send_message(admin_chat, str(new_request))
     # Отправка админу сообщения
     keyboard = types.InlineKeyboardMarkup()
     key_accept0 = types.InlineKeyboardButton(text='Принять: срочно',  callback_data='accept0') # кнопка "Принять"

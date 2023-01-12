@@ -28,12 +28,16 @@ db_path = 'db/requests.db'
 def new_request(description, date_start, sender_id, sender, location):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    sql = "INSERT INTO requests (description, date_start,                              sender_id, sender, location, active) VALUES (?, ?, ?, ?, ?, ?)"
-    data =                      (description, datetime.fromtimestamp(int(date_start)), sender_id, sender, location, True)
-    cursor.execute(sql, (data))
+    sql = f"INSERT INTO requests (description, date_start, sender_id, sender, location, active) VALUES (\"{description}\", '{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}', {sender_id}, \"{sender}\", \"{location}\", 1)"
+    data =                      (description, datetime.now(), sender_id, sender, location, True)
+    cursor.execute(sql)
     conn.commit()
-    sql = f"SELECT id FROM requests WHERE sender_id = {sender_id} ORDER BY date_start DESC"
-    data = cursor.execute(sql)
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    sql1 = f"SELECT id FROM requests ORDER BY id DESC"
+    data = cursor.execute(sql1)
+    print(data)
     for row in data:
         return row[0]
 
@@ -64,7 +68,7 @@ def accept_request(msg_to_admin, priority):
         sender_id = row[1]
         break
     # Установка заявки принятой
-    sql = f"UPDATE requests SET accepted = {True}, priority={priority}, date_accept='{datetime.now()}' WHERE id = {req_id}"
+    sql = f"UPDATE requests SET accepted = {True}, priority={priority}, date_accept='{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}' WHERE id = {req_id}"
     cursor.execute(sql)
     conn.commit()
     return (req_id, sender_id)
@@ -87,7 +91,7 @@ def set_msg_inactive(msg_end):
         request = row[0]
         break
     # Обновление записи
-    sql = f"UPDATE requests SET active = {False}, date_end='{datetime.now()}' WHERE id = {request}"
+    sql = f"UPDATE requests SET active = {False}, date_end='{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}' WHERE id = {request}"
     cursor.execute(sql)
     conn.commit()
     return request
@@ -153,5 +157,5 @@ def get_dates(request):
     
     data = cursor.execute(sql)
     for row in data:
-        return (datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S'), datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f'), datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S.%f'))
+        return (datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S'), datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S'), datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S'))
     return None
