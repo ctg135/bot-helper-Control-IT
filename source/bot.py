@@ -4,8 +4,9 @@ import os
 import db_work as db
 from telebot import types
 
-admin_id  = tokens.admin_id
-token_bot = tokens.token_bot_old
+admin_chat  = tokens.admin_chat
+token_bot = tokens.token_bot
+db_path = db.db_path
 
 print("Starting bot...")
 bot = telebot.TeleBot(token_bot)
@@ -36,7 +37,7 @@ rates = {
 
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
-    if message.from_user.id == admin_id:
+    if message.chat.id == admin_chat:
         menu=''
         kbd = types.ReplyKeyboardMarkup()
         buts = []
@@ -44,7 +45,7 @@ def handle_start_help(message):
             menu = f'{menu}{command}: {commands[command]}\n'
             buts.append(types.KeyboardButton(text=command))
         kbd.add(*buts)
-        bot.send_message(admin_id, menu, reply_markup=kbd)
+        bot.send_message(admin_chat, menu, reply_markup=kbd)
     else:
         send_help_message_user(message)
 
@@ -67,16 +68,12 @@ def get_key(d, value):
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     flag = False
-    # Если сообщение отслеживается
-    if message.from_user.id in track_list.values():
-        flag = True
-        bot.send_message(admin_id, f'Чат заявки №{get_key(track_list, message.from_user.id)}:\n{message.text}')
     # Если сообщение от админа
-    if message.from_user.id == admin_id:
+    if message.chat.id == admin_chat:
         if message.text in ('/r', 'Создать заявку'):
             start_request(message)
         elif message.text == '/ping':
-            bot.send_message(admin_id, 'Бот активен')
+            bot.send_message(admin_chat, 'Бот активен')
         elif message.text == '/active':
             items=db.load_from_db(active=True)
             send_list_admin(items)
@@ -95,14 +92,21 @@ def get_text_messages(message):
         elif message.text == '/msg':
             send_message_req(message)
         elif message.text == '/export':
-            doc = open('requests.db', 'rb')
-            bot.send_document(admin_id, doc)
-            bot.send_document(admin_id, "FILEID")
+            doc = open(db_path, 'rb')
+            bot.send_document(admin_chat, doc)
+            bot.send_document(admin_chat, "FILEID")
         elif message.text == '/import':
-            bot.send_message(admin_id, 'Прикрепите файл базы данных')
+            bot.send_message(admin_chat, 'Прикрепите файл базы данных')
             bot.register_next_step_handler(message, load_db)
         elif message.text == '/kill':
             raise Exception('Turning off')
+        else:
+            bot.send_message(admin_chat, 'Неизвестная команда')
+        return
+    # Если чат отслеживается
+    if message.from_user.id in track_list.values():
+        flag = True
+        bot.send_message(admin_chat, f'Чат заявки №{get_key(track_list, message.from_user.id)}:\n{message.text}')
     # Если сообщение от пользователя
     else:
         if message.text in ('/r', 'Создать заявку'):
@@ -116,7 +120,7 @@ def callback_worker(call):
         start_request(call.message)
     if 'rate' in call.data:
         set_rating(call)
-    if call.from_user.id == admin_id:
+    if call.message.chat.id == admin_chat:
         if 'accept' in call.data:
             accept_request(call)
         if call.data == "end":
@@ -125,47 +129,48 @@ def callback_worker(call):
 # Отправка списка отслеживаемых
 def send_track_list():
     if len(track_list) == 0:
-        bot.send_message(admin_id, 'Нету отслеживаемых чатов')
+        bot.send_message(admin_chat, 'Нету отслеживаемых чатов')
         return
     msg = f'Отслеживаемые чаты:\n'
     for item in track_list.keys():
         msg += item
         msg += ' '
-    bot.send_message(admin_id, msg)
+    bot.send_message(admin_chat, msg)
 
 # Создание отслеживаемого чата
 def create_track(message):
-    bot.send_message(admin_id, 'Введите номер заявки')
+    bot.send_message(admin_chat, 'Введите номер заявки')
     bot.register_next_step_handler(message, get_tracknum_cr)
 
 def get_tracknum_cr(message):
     global track_list
     sender = db.get_sender_id(message.text)
+    print(sender)
     if (sender == None):
-        bot.send_message(admin_id, 'Такой заявки нету')
+        bot.send_message(admin_chat, 'Такой заявки нету')
         return
     track_list[message.text]=sender
     bot.send_message(track_list[message.text], 'Системный администратор вошел в чат')
-    bot.send_message(admin_id, 'Просмотр чата начат')
+    bot.send_message(admin_chat, 'Просмотр чата начат')
 
 # Удаление чата из отслеживаемых
 def del_track(message):
-    bot.send_message(admin_id, 'Введите номер заявки')
+    bot.send_message(admin_chat, 'Введите номер заявки')
     bot.register_next_step_handler(message, get_tracknum_del)
 
 def get_tracknum_del(message):
     global track_list
     if message.text not in track_list.keys():
-        bot.send_message(admin_id, 'Такого чата нету')
+        bot.send_message(admin_chat, 'Такого чата нету')
         return
-    bot.send_message(track_list[message.text], 'Системный администратор вышел из чата')
-    bot.send_message(admin_id, 'Чат отключен')
+    # bot.send_message(track_list[message.text], 'Системный администратор вышел из чата')
+    bot.send_message(admin_chat, 'Чат отключен')
     track_list.pop(message.text)
 
 # Список заявок
 def send_list_admin(items):
     if len(items) == 0:
-        bot.send_message(admin_id, 'Записей этой категории нет')
+        bot.send_message(admin_chat, 'Записей этой категории нет')
         return
     msg = ''
     for item in items:
@@ -176,30 +181,30 @@ def send_list_admin(items):
         if item[4] == '1': msg += f'Принята\n\n'
         else: msg += f'Не принята\n\n'
     if len(msg)==0:
-        bot.send_message(admin_id, 'Таких заявок нету')
+        bot.send_message(admin_chat, 'Таких заявок нету')
         return
-    bot.send_message(admin_id, msg)
+    bot.send_message(admin_chat, msg)
 
 # Отправка сообщения от админа по заявке /msg
 req = ''
 def send_message_req(message):
-    bot.send_message(admin_id, f'Введите номер заявки')
+    bot.send_message(admin_chat, f'Введите номер заявки')
     bot.register_next_step_handler(message, get_msg_num_req)
 
 def get_msg_num_req(message):
     global req
     if message.text not in track_list.keys():
-        bot.send_message(admin_id, 'Такого чата нету')
+        bot.send_message(admin_chat, 'Такого чата нету')
         return
     req = track_list[message.text]
-    bot.send_message(admin_id, 'Введите текст сообщения')
+    bot.send_message(admin_chat, 'Введите текст сообщения')
     bot.register_next_step_handler(message, get_msg_text_req)
 
 def get_msg_text_req(message):
     text = message.text
     bot.send_message(req, text)
 
-# Создание заявки в БД /r
+# Создание заявки в БД, команда /r
 name=''
 location=''
 description=''
@@ -235,14 +240,14 @@ def create_request(message):
     # Отправка админу сообщения
     keyboard = types.InlineKeyboardMarkup()
     key_accept0 = types.InlineKeyboardButton(text='Принять: срочно',  callback_data='accept0') # кнопка "Принять"
-    key_accept1 = types.InlineKeyboardButton(text='Принять: быстро',  callback_data='accept1') # кнопка "Принять"
-    key_accept2 = types.InlineKeyboardButton(text='Принять: скоро',   callback_data='accept2') # кнопка "Принять"
-    key_accept3 = types.InlineKeyboardButton(text='Принять: долго',   callback_data='accept3') # кнопка "Принять"
+    key_accept1 = types.InlineKeyboardButton(text='Принять: уже иду',  callback_data='accept1') # кнопка "Принять"
+    key_accept2 = types.InlineKeyboardButton(text='Принять: в течении получаса',   callback_data='accept2') # кнопка "Принять"
+    key_accept3 = types.InlineKeyboardButton(text='Принять: в течении дня',   callback_data='accept3') # кнопка "Принять"
     keyboard.add(key_accept0)
     keyboard.add(key_accept1)
     keyboard.add(key_accept2)
     keyboard.add(key_accept3)
-    msg_to_admin = bot.send_message(admin_id, text=f"Создана заявка №{new_request}:\n" + f'{name}; {location}; {description}', reply_markup=keyboard).id
+    msg_to_admin = bot.send_message(admin_chat, text=f"Создана заявка №{new_request}:\n" + f'{name}; {location}; {description}', reply_markup=keyboard).id
     # добавление номера сообщения к заявке
     db.add_msg_admin(new_request, msg_to_admin)
     # Отправка ответа пользователю
@@ -250,10 +255,10 @@ def create_request(message):
 
 def load_db(message):
     if (message.content_type!='document'):
-        bot.send_message(admin_id, 'Ошибка: необходимо прикрепить файл')
+        bot.send_message(admin_chat, 'Ошибка: необходимо прикрепить файл')
         return
     try:
-        bot.send_message(admin_id, 'Начинаем загрузку...')
+        bot.send_message(admin_chat, 'Начинаем загрузку...')
         file_name = message.document.file_name
         if (str(file_name) != 'requests.db'): raise Exception('File name not requests.db')
         print ('File name: ' + file_name)
@@ -262,18 +267,18 @@ def load_db(message):
         file_id_info = bot.get_file(message.document.file_id)
         downloaded_file = bot.download_file(file_id_info.file_path)
         p = os.getcwd()
-        print ('Opening ' + p)
-        if os.path.isfile(p + '\\' + str(file_name)):
+        print ('Opening ' + '/' + db_path)
+        if os.path.isfile(p + '/' + db_path):
             print('Deleting old DB')
-            os.remove(p + '\\' + str(file_name))
-        print ('Writing ' + p + '\\' + str(file_name))
-        with open(p + '\\' + str(file_name), 'wb') as new_db:
+            os.remove(p + '/' + db_path)
+        print ('Writing ' + '/' + db_path)
+        with open(p + '/' + db_path, 'wb') as new_db:
             new_db.write(downloaded_file)
         print ('Success!')
-        bot.send_message(admin_id, 'Загрузка базы данных выполнена')
+        bot.send_message(admin_chat, 'Загрузка базы данных выполнена')
     except Exception as e:
         print('Error while importing: ' + str(e))
-        bot.send_message(admin_id, 'Ошибка загрузки: ' + str(e))
+        bot.send_message(admin_chat, 'Ошибка загрузки: ' + str(e))
 
 
 
@@ -282,12 +287,12 @@ def accept_request(call):
     priority=int(call.data[6])
     data = db.accept_request(call.message.id, priority)
     # Удаление клавиатуы с кнопками 'приянть...'
-    bot.edit_message_reply_markup(admin_id, message_id = call.message.id, reply_markup = '')
-    # Отправка мне сообщения с завершением
+    bot.edit_message_reply_markup(admin_chat, message_id = call.message.id, reply_markup = '')
+    # Отправка админу сообщения с завершением
     keyboard = types.InlineKeyboardMarkup()
     key_end = types.InlineKeyboardButton(text='Завершить', callback_data='end') # кнопка "Принять"
     keyboard.add(key_end)
-    msg_end = bot.send_message(admin_id, text=f"Заявка №{data[0]} принята. Завершить?", reply_markup=keyboard).id
+    msg_end = bot.send_message(admin_chat, text=f"Заявка №{data[0]} принята. Завершить?", reply_markup=keyboard).id
     # Добавление сообщения с завершением
     db.add_msg_end(data[0], msg_end)
     # Отправка сообщения пользователю о принятии
@@ -306,7 +311,7 @@ def end_request(call):
 
     user_id = db.get_sender_id(request)
     # Удаление клавиатуры  с кнопкой 'завершить'
-    bot.edit_message_reply_markup(admin_id, message_id = call.message.id, reply_markup = '')
+    bot.edit_message_reply_markup(admin_chat, message_id = call.message.id, reply_markup = '')
 
     # Отправление пользователю сообщения с запросом установить рейтинг
     keyboard = types.InlineKeyboardMarkup()
@@ -319,11 +324,11 @@ def end_request(call):
     msg_user=bot.send_message(user_id, text='Оставьте отзыв о проделанной работе', reply_markup=keyboard)
     # Установка сообщения с рейтингом в БД
     db.set_rate_msg(request, msg_user.id)
-    # TODO: Отпралвление админу сообщения со временем
+    #  Отпралвление админу сообщения со временем
     dates = db.get_dates(request)
-    bot.send_message(admin_id, f"Заявка №{request} выполнена. Время на принятие: {dates[1]-dates[0]}. Общее время выполнения: {dates[2]-dates[0]}")
+    bot.send_message(admin_chat, f"Заявка №{request} выполнена. Время на принятие: {dates[1]-dates[0]}. Общее время выполнения: {dates[2]-dates[0]}")
     # Сообщение пользователюю
-    keyboard = types.ReplyKeyboardMarkup();
+    keyboard = types.ReplyKeyboardMarkup()
     key_accept = types.InlineKeyboardButton(text='Создать заявку', callback_data='create')
     keyboard.add(key_accept)
     bot.send_message(user_id, reply_markup=keyboard, text=f"Опишите свою проблему в чате. Для создания заявки нажмите кнопку Создать заявку")
@@ -334,17 +339,17 @@ def set_rating(call):
     bot.edit_message_reply_markup(call.message.chat.id, message_id = call.message.id, reply_markup = '')
     bot.edit_message_text(text=f'Спасибо за отзыв! Вы поставили ' + rates[rate], chat_id=call.message.chat.id, message_id=call.message.id)
     req = db.set_rating(call.message.chat.id, call.message.id, rate)
-    bot.send_message(admin_id, f'Рейтинг заявки №{req}: {rate}')
+    bot.send_message(admin_chat, f'Рейтинг заявки №{req}: {rate}')
 
 
 
 # Подключение бота
-bot.send_message(admin_id, 'Бот запущен!')
+bot.send_message(admin_chat, 'Бот запущен!')
 try:
-    bot.polling(none_stop=True, interval=0, long_polling_timeout=2000000, timeout=2000000)
+    bot.infinity_polling()
 except SystemExit  as e:
-    bot.semd_message(admin_id, 'Бот выключен')
+    bot.send_message(admin_chat, 'Бот выключен')
 except Exception as e:
-    bot.send_message(admin_id, f'Бот выключен: {e}')
+    bot.send_message(admin_chat, f'Бот выключен: {e}')
     print(e)
 input()
