@@ -65,8 +65,10 @@ def get_key(d, value):
             return k
 
 
-@bot.message_handler(content_types=['text'])
+@bot.message_handler(content_types=["text", "audio", "document", "photo", "video", "video_note", "voice", "location"])
 def get_text_messages(message):
+    # обработка только текстовых сообщений
+    if message.content_type != 'text': return
     flag = False
     # Если сообщение от админа
     if message.chat.id == admin_chat:
@@ -221,7 +223,7 @@ def get_name(message):
 def get_location(message):
     global location
     location = message.text
-    bot.send_message(message.from_user.id, text='Кратко опишите проблему в одном сообщении')
+    bot.send_message(message.from_user.id, text='Кратко опишите проблему в одном сообщении. Можно прикрепить одно вложение.')
     bot.register_next_step_handler(message, get_description)
 
 def get_description(message):
@@ -247,6 +249,10 @@ def create_request(message):
     keyboard.add(key_accept1)
     keyboard.add(key_accept2)
     keyboard.add(key_accept3)
+    # Пересылка сообщения, если есть вложения в сообщении 
+    if message.content_type != 'text':
+        bot.forward_message(admin_chat, message.chat.id, message.id) 
+    # Уведомление администраторов
     msg_to_admin = bot.send_message(admin_chat, text=f"Создана заявка №{new_request}:\n" + f'{name}; {location}; {description}', reply_markup=keyboard).id
     # добавление номера сообщения к заявке
     db.add_msg_admin(new_request, msg_to_admin)
