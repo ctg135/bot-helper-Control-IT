@@ -37,7 +37,6 @@ def new_request(description, date_start, sender_id, sender, location):
     cursor = conn.cursor()
     sql1 = f"SELECT id FROM requests ORDER BY id DESC"
     data = cursor.execute(sql1)
-    print(data)
     for row in data:
         return row[0]
 

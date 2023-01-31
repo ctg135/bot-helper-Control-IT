@@ -147,7 +147,6 @@ def create_track(message):
 def get_tracknum_cr(message):
     global track_list
     sender = db.get_sender_id(message.text)
-    print(sender)
     if (sender == None):
         bot.send_message(admin_chat, 'Такой заявки нету')
         return
@@ -234,7 +233,7 @@ def get_description(message):
 # Создание заявки в БД
 def create_request(message):
     # Создание заявки в бд   
-    # reply_markup=types.ReplyKeyboardRemove(),
+    # reply_markup=types.ReplyKeyboardRemove()
     new_request = db.new_request(description=description,
                                 location=location,
                                 sender=name,
