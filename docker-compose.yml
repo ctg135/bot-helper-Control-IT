@@ -1,8 +1,10 @@
 version: '3.4'
 
 services:
-  bothelpercontrolit:
-    image: bothelpercontrolit
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+  bot:
+    image: ctg135/kitsab1.2
+    container_name: kitsab
+    environment:
+      - TOKEN_BOT=value
+      - ADMIN_CHAT=value
+    restart: always

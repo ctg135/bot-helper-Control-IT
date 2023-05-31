@@ -102,8 +102,6 @@ def get_text_messages(message):
             bot.register_next_step_handler(message, load_db)
         elif message.text == '/kill':
             raise Exception('Turning off')
-        else:
-            bot.send_message(admin_chat, 'Неизвестная команда')
         return
     # Если чат отслеживается
     if message.from_user.id in track_list.values():
@@ -239,7 +237,6 @@ def create_request(message):
                                 sender=name,
                                 date_start=message.date,
                                 sender_id=message.from_user.id)
-    bot.send_message(admin_chat, str(new_request))
     # Отправка админу сообщения
     keyboard = types.InlineKeyboardMarkup()
     key_accept0 = types.InlineKeyboardButton(text='Принять: срочно',  callback_data='accept0') # кнопка "Принять"
@@ -351,7 +348,7 @@ def set_rating(call):
 
 
 # Подключение бота
-bot.send_message(admin_chat, 'Бот запущен!')
+# bot.send_message(admin_chat, 'Бот запущен!')
 try:
     bot.infinity_polling()
 except SystemExit  as e:

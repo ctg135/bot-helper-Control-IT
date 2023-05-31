@@ -1,11 +1,15 @@
 version: '3.4'
 
 services:
-  bothelpercontrolit:
-    image: bothelpercontrolit
+  bot:
+    image: kitsab1.2
+    container_name: kitasab_debug
     build:
       context: .
       dockerfile: ./Dockerfile
-    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 source\bot.py "]
+    # command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 source\bot.py "]
     ports:
       - 5678:5678
+    environment:
+      - TOKEN_BOT=value
+      - ADMIN_CHAT=value
