@@ -57,7 +57,7 @@ pipeline {
                     echo '**** Copying requests.db to current container ****'
                     try{
                         sh 'docker cp ${FOLDER_BACKUP} ${CONTAINER}:${FOLDER_DB}'
-                        sh 'docker exec ${CONTAINER} "chmod ug+rwx ${FOLDER_DB}"'
+                        sh 'docker exec -u root ${CONTAINER} /usr/bin/chmod 777 ${FOLDER_DB}'
                     } catch (err){
                         echo: 'caught error: $err'
                     }
