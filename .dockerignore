@@ -18,6 +18,7 @@
 **/docker-compose*
 **/compose*
 **/Dockerfile*
+**/Jenkinsfile*
 **/node_modules
 **/npm-debug.log
 **/obj

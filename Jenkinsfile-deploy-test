@@ -18,8 +18,8 @@ pipeline {
                     withCredentials([string(credentialsId: 'tg_token_bot_test', variable: 'TOKENBOT')]) {
                         sh "sed -i -e 's/TOKEN_BOT_EXAMPLE/${TOKENBOT}/g' 'docker-compose.yml'"
                     }
-                    withCredentials([string(credentialsId: 'tg_user_id_kit_admin', variable: 'ADMINID')]) {
-                        sh "sed -i -e 's/ADMIN_ID_EXAMPLE/${ADMINID}/g' 'docker-compose.yml'"
+                    withCredentials([string(credentialsId: 'tg_user_id_kit_admin', variable: 'ADMINCHAT')]) {
+                        sh "sed -i -e 's/ADMIN_CHAT_EXAMPLE/${ADMINCHAT}/g' 'docker-compose.yml'"
                     }
                 }
             }
@@ -36,19 +36,6 @@ pipeline {
                     }
                     echo '**** Running container ****'
                     sh 'docker compose --file "docker-compose-test.yml" up -d'
-                }
-            }
-        }
-        stage('Import DB file'){
-            steps {
-                script {
-                    echo '**** Copying requests.db to current container ****'
-                    try{
-                        sh 'docker cp ${FOLDER_BACKUP} ${CONTAINER}:${FOLDER_DB}'
-                        sh 'docker exec ${CONTAINER} "chmod ug+rwx ${FOLDER_DB}"'
-                    } catch (err){
-                        echo: 'caught error: $err'
-                    }
                 }
             }
         }

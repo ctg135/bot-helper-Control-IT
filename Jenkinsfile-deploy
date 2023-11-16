@@ -30,8 +30,8 @@ pipeline {
                     withCredentials([string(credentialsId: 'tg_token_bot_kitsab', variable: 'TOKENBOT')]) {
                         sh "sed -i -e 's/TOKEN_BOT_EXAMPLE/${TOKENBOT}/g' 'docker-compose.yml'"
                     }
-                    withCredentials([string(credentialsId: 'tg_user_id_kit_admin', variable: 'ADMINID')]) {
-                        sh "sed -i -e 's/ADMIN_ID_EXAMPLE/${ADMINID}/g' 'docker-compose.yml'"
+                    withCredentials([string(credentialsId: 'tg_group_id_tech_support', variable: 'ADMINCHAT')]) {
+                        sh "sed -i -e 's/ADMIN_CHAT_EXAMPLE/${ADMINCHAT}/g' 'docker-compose.yml'"
                     }
                 }
             }
