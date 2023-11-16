@@ -1,4 +1,4 @@
-#! groovy
+#! groovy tmp
 
 pipeline {
     agent any
@@ -16,7 +16,7 @@ pipeline {
                 script {
                     echo '**** Setting up docker compose ****'
                     withCredentials([string(credentialsId: 'tg_token_bot_test', variable: 'TOKENBOT')]) {
-                        sh "sed -i -e 's/TOKEN_BOT_EXAMPLE/${TOKENBOT}/g' 'docker-compose-test.yml'"
+                        sh "sed -i -e 's/TOKEN_BOT_EXAMPLE/${TOKENBOT}/g' 'docker-compose-testyml'"
                     }
                     withCredentials([string(credentialsId: 'tg_user_id_kit_admin', variable: 'ADMINCHAT')]) {
                         sh "sed -i -e 's/ADMIN_CHAT_EXAMPLE/${ADMINCHAT}/g' 'docker-compose-test.yml'"
