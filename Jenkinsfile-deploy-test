@@ -11,18 +11,6 @@ pipeline {
         FOLDER_BACKUP = "/tmp/requests.db"
     }
     stages {
-        stage ('Make DB backup'){
-            steps {
-                script {
-                    echo '**** Copying requests.db from current container ****'
-                    try{
-                        sh 'docker cp ${CONTAINER}:${FOLDER_DB} ${FOLDER_BACKUP}'
-                    } catch (err){
-                        echo: 'caught error: $err'
-                    }
-                }
-            }
-        }
         stage('Setting up docker compose'){
             steps {
                 script {
@@ -47,7 +35,7 @@ pipeline {
                         echo: 'caught error: $err'
                     }
                     echo '**** Running container ****'
-                    sh 'docker compose up --file "docker-compose-test.yml" -d'
+                    sh 'docker compose --file "docker-compose-test.yml" up -d'
                 }
             }
         }
