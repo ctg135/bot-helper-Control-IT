@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   bot:
-    image: kitsab1.2
+    image: kitsab_bot_image:latest
     container_name: kitasab_debug
     build:
       context: .

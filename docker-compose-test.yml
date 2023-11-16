@@ -3,7 +3,7 @@ version: '3.4'
 services:
   bot:
     image: kitsab_bot_image:latest
-    container_name: kitsab_bot
+    container_name: kitsab_bot_test
     environment:
       - TOKEN_BOT=TOKEN_BOT_EXAMPLE
       - ADMIN_CHAT=ADMIN_CHAT_EXAMPLE
